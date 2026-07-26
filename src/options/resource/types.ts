@@ -76,6 +76,26 @@ export type TextResource = {
   skipPdfConfirmation: string;
   pdfUrlPattern: string;
   domType: string;
+  karakeepSettings: string;
+  karakeepUrlLabel: string;
+  karakeepApiKeyLabel: string;
+  karakeepTagLabel: string;
+  karakeepGrantAccess: string;
+  karakeepAccessGranted: string;
+  karakeepAccessDenied: string;
+  karakeepPermissionError: string;
+  karakeepHighlightColorLabel: string;
+  karakeepColorYellow: string;
+  karakeepColorRed: string;
+  karakeepColorGreen: string;
+  karakeepColorBlue: string;
+  karakeepExportToAnki: string;
+  karakeepExporting: string;
+  karakeepExportStageNotes: string;
+  karakeepExportStageHighlights: string;
+  karakeepExportBuilding: string;
+  karakeepExportSuccess: string;
+  karakeepExportNoEntries: string;
 };
 
 export type TextResourceKeys = keyof TextResource;

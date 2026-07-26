@@ -86,6 +86,27 @@ const JapaneseTextResource: TextResource = {
   skipPdfConfirmation: "PDFファイルのダウンロード確認を省略する",
   pdfUrlPattern: "PDFドキュメント判定の上書き(URLに対する正規表現)",
   domType: "DOM種別",
+
+  karakeepSettings: "Karakeep連携",
+  karakeepUrlLabel: "Karakeep URL",
+  karakeepApiKeyLabel: "Karakeep APIキー",
+  karakeepTagLabel: "単語保存時に付けるタグ",
+  karakeepGrantAccess: "アクセスを許可",
+  karakeepAccessGranted: "アクセスが許可されました",
+  karakeepAccessDenied: "アクセスが拒否されました",
+  karakeepPermissionError: "権限のリクエストに失敗しました",
+  karakeepHighlightColorLabel: "Karakeepの記事内でマークする際のハイライト色",
+  karakeepColorYellow: "黄",
+  karakeepColorRed: "赤",
+  karakeepColorGreen: "緑",
+  karakeepColorBlue: "青",
+  karakeepExportToAnki: "Ankiにエクスポート",
+  karakeepExporting: "{{{stage}}}を取得中...(ページ{{{page}}})",
+  karakeepExportStageNotes: "ノート",
+  karakeepExportStageHighlights: "ハイライト",
+  karakeepExportBuilding: ".apkgファイルを作成中...",
+  karakeepExportSuccess: "{{{count}}}語をkarakeep-vocab.apkgにエクスポートしました",
+  karakeepExportNoEntries: "エクスポート対象の単語が見つかりませんでした",
 };
 
 export { JapaneseTextResource };

@@ -5,7 +5,8 @@
     "moduleResolution": "bundler",
     "strict": true,
     "noImplicitAny": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["chrome"]
   },
   "exclude": ["__test__"]
 }

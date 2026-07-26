@@ -32,6 +32,10 @@ export type MouseDictionaryAdvancedSettings = {
   contentTemplate: string;
   pdfUrl: string;
   domType: "shadow" | "light";
+  karakeepUrl: string;
+  karakeepApiKey: string;
+  karakeepTag: string;
+  karakeepHighlightColor: "yellow" | "red" | "green" | "blue";
 };
 
 export type MouseDictionarySettings = MouseDictionaryBasicSettings & MouseDictionaryAdvancedSettings;

@@ -12,6 +12,10 @@ export default {
   initialPosition: "right",
   skipPdfConfirmation: false,
   pdfUrl: "",
+  karakeepUrl: "",
+  karakeepApiKey: "",
+  karakeepTag: "vocab",
+  karakeepHighlightColor: "yellow",
   backgroundColor: "#ffffff",
   headFontColor: "#000088",
   descFontColor: "#101010",
@@ -75,13 +79,16 @@ export default {
 
   contentTemplate: `<div style="cursor:inherit;font-family:'hiragino kaku gothic pro', meiryo, sans-serif; padding:10px;">
   {{#words}}
+    <div data-md-entry data-md-head="{{head}}">
     {{^isShort}}
       <span style="font-size:{{headFontSize}};color:{{headFontColor}};font-weight:bold;font-family:Georgia;">
         {{head}}
       </span>
       <span style="cursor:pointer;visibility:hidden;" data-md-pronunciation="{{head}}" data-md-hovervisible="true">🔊</span>
+      <span style="cursor:pointer;visibility:hidden;" data-md-save data-md-hovervisible="true" title="Save to Karakeep">💾</span>
+      <span style="cursor:pointer;visibility:hidden;display:none;" data-md-highlight data-md-hovervisible="true" title="Mark in Karakeep">🖍️</span>
       <br/>
-      <span style="font-size:{{descFontSize}};color:{{descFontColor}};">
+      <span data-md-desc style="font-size:{{descFontSize}};color:{{descFontColor}};">
         {{{desc}}}
       </span>
     {{/isShort}}
@@ -89,10 +96,13 @@ export default {
       <span style="font-size:{{headFontSize}};color:{{headFontColor}};font-weight:bold;font-family:Georgia;">
         {{head}}
       </span>
-      <span style="color:#505050;font-size:x-small;">
+      <span style="cursor:pointer;visibility:hidden;" data-md-save data-md-hovervisible="true" title="Save to Karakeep">💾</span>
+      <span style="cursor:pointer;visibility:hidden;display:none;" data-md-highlight data-md-hovervisible="true" title="Mark in Karakeep">🖍️</span>
+      <span data-md-desc style="color:#505050;font-size:x-small;">
         {{shortDesc}}
       </span>
     {{/isShort}}
+    </div>
     {{^isLast}}
       <br/><hr style="border:0;border-top:1px solid #E0E0E0;margin:12px 0;height:1px;width:100%;" />
     {{/isLast}}

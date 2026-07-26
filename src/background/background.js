@@ -4,6 +4,8 @@
  * Licensed under MIT
  */
 
+import config from "../main/core/config";
+import karakeepClient from "./karakeepClient";
 import ExpiringQueue from "./queue";
 import generateUniqueId from "./unique";
 
@@ -73,8 +75,60 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       sendResponse(pdfData);
       break;
     }
+    case "karakeep_save_word": {
+      saveWordToKarakeep(request).then(sendResponse);
+      return true;
+    }
+    case "karakeep_create_highlight": {
+      createKarakeepHighlight(request).then(sendResponse);
+      return true;
+    }
   }
 });
+
+const saveWordToKarakeep = async ({ word, meaning, pageUrl }) => {
+  const settings = await config.loadSettings();
+  const { karakeepUrl, karakeepApiKey, karakeepTag } = settings;
+
+  if (!karakeepUrl || !karakeepApiKey) {
+    return { ok: false, status: 0, message: "Karakeep is not configured yet. Please set it up in the options page." };
+  }
+
+  try {
+    const bookmark = await karakeepClient.createTextBookmark(karakeepUrl, karakeepApiKey, {
+      title: word,
+      text: meaning,
+      sourceUrl: pageUrl,
+    });
+    await karakeepClient.attachTag(karakeepUrl, karakeepApiKey, bookmark.id, karakeepTag);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, status: e?.status ?? 0, message: e?.message ?? String(e) };
+  }
+};
+
+const createKarakeepHighlight = async ({ bookmarkId, startOffset, endOffset, text, note, color }) => {
+  const settings = await config.loadSettings();
+  const { karakeepUrl, karakeepApiKey } = settings;
+
+  if (!karakeepUrl || !karakeepApiKey) {
+    return { ok: false, status: 0, message: "Karakeep is not configured yet. Please set it up in the options page." };
+  }
+
+  try {
+    await karakeepClient.createHighlight(karakeepUrl, karakeepApiKey, {
+      bookmarkId,
+      startOffset,
+      endOffset,
+      text,
+      note,
+      color,
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, status: e?.status ?? 0, message: e?.message ?? String(e) };
+  }
+};
 
 const sendToActiveTab = (callback) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

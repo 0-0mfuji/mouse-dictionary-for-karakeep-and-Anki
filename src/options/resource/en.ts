@@ -91,6 +91,27 @@ const EnglishTextResource: TextResource = {
   skipPdfConfirmation: "Skip PDF download confirmation",
   pdfUrlPattern: "Override PDF document judgment (regular expressions for URL)",
   domType: "DOM Type",
+
+  karakeepSettings: "Karakeep integration",
+  karakeepUrlLabel: "Karakeep URL",
+  karakeepApiKeyLabel: "Karakeep API key",
+  karakeepTagLabel: "Tag to attach when saving a word",
+  karakeepGrantAccess: "Grant access",
+  karakeepAccessGranted: "Access granted",
+  karakeepAccessDenied: "Access was denied",
+  karakeepPermissionError: "Failed to request permission",
+  karakeepHighlightColorLabel: "Highlight color used when marking a word in Karakeep's reader view",
+  karakeepColorYellow: "Yellow",
+  karakeepColorRed: "Red",
+  karakeepColorGreen: "Green",
+  karakeepColorBlue: "Blue",
+  karakeepExportToAnki: "Export to Anki",
+  karakeepExporting: "Fetching {{{stage}}}... (page {{{page}}})",
+  karakeepExportStageNotes: "notes",
+  karakeepExportStageHighlights: "highlights",
+  karakeepExportBuilding: "Building the .apkg file...",
+  karakeepExportSuccess: "Exported {{{count}}} words to karakeep-vocab.apkg",
+  karakeepExportNoEntries: "No words found to export yet",
 };
 
 export { EnglishTextResource };

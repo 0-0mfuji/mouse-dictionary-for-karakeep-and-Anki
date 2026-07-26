@@ -20,6 +20,7 @@ import {
 import {
   AdvancedSettings,
   BasicSettings,
+  KarakeepSettings,
   LoadDictionary,
   OperationPanel,
   Tips,
@@ -216,6 +217,12 @@ export const Main: React.FC = () => {
               onClick={() => confirmAndLoadInitialDict("confirmReloadInitialDict", updateState)}
             />
           </BasicSettings>
+          <br />
+
+          <KarakeepSettings
+            onUpdate={(statePatch, settingsPatch) => updateState(statePatch, settingsPatch)}
+            settings={state.settings}
+          />
           <br />
 
           <Toggle

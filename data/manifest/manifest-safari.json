@@ -10,6 +10,7 @@
     "open_in_tab": true
   },
   "permissions": ["storage", "unlimitedStorage", "activeTab"],
+  "optional_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

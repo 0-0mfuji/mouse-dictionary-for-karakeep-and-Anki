@@ -19,7 +19,7 @@ const loadAll = async () => {
     return { settings: parseSettings(defaultSettings), position: {} };
   }
   const data = await getStoredData([KEY_USER_CONFIG, KEY_LAST_POSITION]);
-  const mergedSettings = { ...defaultSettings, ...data[KEY_USER_CONFIG] };
+  const mergedSettings = withFallbacks({ ...defaultSettings, ...data[KEY_USER_CONFIG] });
   const settings = parseSettings(mergedSettings);
 
   const position = data[KEY_LAST_POSITION];
@@ -38,7 +38,16 @@ const loadRawSettings = async () => {
 
   const data = await getStoredData([KEY_USER_CONFIG]);
   const userSettings = data[KEY_USER_CONFIG];
-  return { ...defaultSettings, ...userSettings };
+  return withFallbacks({ ...defaultSettings, ...userSettings });
+};
+
+// A blank string for these fields would otherwise be sent to the Karakeep API as-is
+// (e.g. an empty tag name), so fall back to the default rather than merging it in as-is.
+const withFallbacks = (settings) => {
+  if (!settings.karakeepTag) {
+    settings.karakeepTag = defaultSettings.karakeepTag;
+  }
+  return settings;
 };
 
 const parseSettings = (settings) => {

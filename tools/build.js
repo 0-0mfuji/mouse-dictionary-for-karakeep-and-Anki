@@ -35,6 +35,7 @@ const copyStaticFiles = (browser, mode) => {
     });
   }
   fse.copyFileSync("node_modules/milligram/dist/milligram.min.css", `dist-${browser}/options/milligram.min.css`);
+  fse.copyFileSync("node_modules/sql.js/dist/sql-wasm.wasm", `dist-${browser}/options/sql-wasm.wasm`);
 };
 
 const build = (browser, mode) => {
