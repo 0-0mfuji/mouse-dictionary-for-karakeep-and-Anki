@@ -35,7 +35,13 @@ const copyStaticFiles = (browser, mode) => {
     });
   }
   fse.copyFileSync("node_modules/milligram/dist/milligram.min.css", `dist-${browser}/options/milligram.min.css`);
-  fse.copyFileSync("node_modules/sql.js/dist/sql-wasm.wasm", `dist-${browser}/options/sql-wasm.wasm`);
+  // Matches the wasm filename sql.js's bundled *browser* build (dist/sql-wasm-browser.js) actually
+  // requests at runtime - see the comment in src/options/logic/anki.ts for why that's the variant
+  // esbuild resolves here, as opposed to dist/sql-wasm.wasm.
+  fse.copyFileSync(
+    "node_modules/sql.js/dist/sql-wasm-browser.wasm",
+    `dist-${browser}/options/sql-wasm-browser.wasm`,
+  );
 };
 
 const build = (browser, mode) => {

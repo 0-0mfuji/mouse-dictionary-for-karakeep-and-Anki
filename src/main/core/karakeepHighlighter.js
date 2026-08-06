@@ -106,7 +106,62 @@ const getHighlightTarget = (karakeepUrl) => {
     return null;
   }
 
-  return { bookmarkId, startOffset, endOffset, text: range.toString() };
+  // `container` is a live DOM reference, kept only for applyVisualHighlight() below - it must
+  // never be forwarded as-is into a chrome.runtime.sendMessage payload (not structured-cloneable).
+  return { bookmarkId, startOffset, endOffset, text: range.toString(), container };
 };
 
-export default { getHighlightTarget };
+// Tailwind bg-{color}-200 equivalents, matching karakeep's own highlight styling
+// (see HIGHLIGHT_COLOR_MAP in packages/shared-react/components/highlights.ts).
+const HIGHLIGHT_BACKGROUND_COLORS = {
+  yellow: "#fef08a",
+  red: "#fecaca",
+  green: "#bbf7d0",
+  blue: "#bfdbfe",
+};
+
+// Mirrors getRangeFromHighlight()/applyHighlightByOffset() in karakeep's own
+// BookmarkHtmlHighlighter.tsx, so the freshly-created highlight shows up immediately instead of
+// only after the user reloads the page (karakeep's own React state has no way to know we created
+// it, since we talk to its API directly rather than through its UI).
+const applyVisualHighlight = (container, startOffset, endOffset, color) => {
+  if (!container) {
+    return;
+  }
+  const ranges = [];
+  let offset = 0;
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+  let node = walker.nextNode();
+  while (node) {
+    const nodeLength = node.textContent?.length ?? 0;
+    const nodeStart = offset;
+    const nodeEnd = nodeStart + nodeLength;
+    if (nodeStart < endOffset && nodeEnd > startOffset) {
+      ranges.push({
+        node,
+        start: Math.max(0, startOffset - nodeStart),
+        end: Math.min(nodeLength, endOffset - nodeStart),
+      });
+    }
+    offset += nodeLength;
+    node = walker.nextNode();
+  }
+
+  for (let { node: textNode, start, end } of ranges) {
+    if (start > 0) {
+      textNode.splitText(start);
+      textNode = /** @type {Text} */ (textNode.nextSibling);
+      end -= start;
+    }
+    if (end < textNode.length) {
+      textNode.splitText(end);
+    }
+    const span = document.createElement("span");
+    span.style.backgroundColor = HIGHLIGHT_BACKGROUND_COLORS[color] ?? HIGHLIGHT_BACKGROUND_COLORS.yellow;
+    span.dataset.mdKarakeepHighlight = "true";
+    textNode.parentNode?.insertBefore(span, textNode);
+    span.appendChild(textNode);
+  }
+};
+
+export default { getHighlightTarget, applyVisualHighlight };

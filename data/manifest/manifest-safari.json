@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Mouse Dictionary",
+  "name": "Mouse Dictionary for Karakeep and Anki",
   "version": "",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
@@ -17,7 +17,7 @@
   },
   "browser_action": {
     "default_icon": "icons/icon19.png",
-    "default_title": "Mouse Dictionary"
+    "default_title": "Mouse Dictionary for Karakeep and Anki"
   },
   "commands": {
     "_execute_browser_action": {

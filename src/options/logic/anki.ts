@@ -5,6 +5,11 @@
  */
 
 import JSZip from "jszip";
+// sql.js's package.json "exports" map resolves the bare "sql.js" specifier to its "browser" build
+// (dist/sql-wasm-browser.js) under esbuild's default browser platform conditions - the plain
+// dist/sql-wasm.js build isn't bundler-safe here (it still has Node-only `require("node:fs")`
+// paths that fail to resolve). The browser build's own wasm filename is sql-wasm-browser.wasm
+// (copied alongside it by tools/build.js), not sql-wasm.wasm.
 import initSqlJs from "sql.js";
 
 export type AnkiNote = {

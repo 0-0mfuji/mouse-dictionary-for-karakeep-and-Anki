@@ -1,5 +1,5 @@
 {
-  "name": "Mouse Dictionary",
+  "name": "Mouse Dictionary for Karakeep and Anki",
   "manifest_version": 3,
   "version": "",
   "description": "__MSG_appDesc__",
@@ -19,7 +19,7 @@
   },
   "action": {
     "default_icon": "icons/icon19.png",
-    "default_title": "Mouse Dictionary"
+    "default_title": "Mouse Dictionary for Karakeep and Anki"
   },
   "commands": {
     "_execute_action": {

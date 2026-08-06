@@ -260,6 +260,15 @@ const markInKarakeep = async (elem, highlightTarget) => {
   if (response?.ok) {
     elem.textContent = "✅";
     elem.title = "Marked in Karakeep";
+    // karakeep's own page has no way to know we created this highlight via its API directly, so
+    // its highlight list won't include it until the page is reloaded. Draw it in immediately so
+    // the user doesn't have to reload to see the result of what they just did.
+    karakeepHighlighter.applyVisualHighlight(
+      highlightTarget.container,
+      highlightTarget.startOffset,
+      highlightTarget.endOffset,
+      highlightTarget.color,
+    );
   } else {
     elem.textContent = "❌";
     elem.title = response?.message ? `Failed to mark: ${response.message}` : "Failed to mark in Karakeep";
