@@ -13,12 +13,27 @@ const KEY_USER_CONFIG = "**** config ****";
 const KEY_LOADED = "**** loaded ****";
 const KEY_BYTES_IN_USE = "**** bytes_in_use ****";
 
-const { loadRawSettings, isDataReady } = orgConfig;
+const { isDataReady } = orgConfig;
 
-export { isDataReady, loadRawSettings };
+export { isDataReady };
 
-export const saveSettings = (settings: MouseDictionarySettings): Promise<void> =>
-  storage.sync.set({ [KEY_USER_CONFIG]: JSON.stringify(settings) });
+const KEY_OPENAI_API_KEY = "reader_openai_api_key";
+
+export const loadRawSettings = async (): Promise<MouseDictionarySettings> => {
+  const [settings, local] = await Promise.all([
+    orgConfig.loadRawSettings() as Promise<MouseDictionarySettings>,
+    storage.local.get([KEY_OPENAI_API_KEY]),
+  ]);
+  return { ...settings, openaiApiKey: local[KEY_OPENAI_API_KEY] ?? "" };
+};
+
+export const saveSettings = async (settings: MouseDictionarySettings): Promise<void> => {
+  const { openaiApiKey, ...syncedSettings } = settings;
+  await Promise.all([
+    storage.sync.set({ [KEY_USER_CONFIG]: JSON.stringify(syncedSettings) }),
+    storage.local.set({ [KEY_OPENAI_API_KEY]: openaiApiKey ?? "" }),
+  ]);
+};
 
 export const setDataReady = (ready: boolean): Promise<void> => storage.local.set({ [KEY_LOADED]: ready });
 

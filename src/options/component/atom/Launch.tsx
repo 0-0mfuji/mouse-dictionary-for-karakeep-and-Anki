@@ -22,7 +22,7 @@ const STYLE_IMAGE: React.CSSProperties = {
 };
 
 const STYLE1: React.CSSProperties = {
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--md-surface-container-lowest)",
   boxShadow: "2px 2px 2px 2px #b0b0b0",
   borderRadius: 10,
   paddingLeft: 6,
@@ -36,7 +36,7 @@ const STYLE1: React.CSSProperties = {
 
 const STYLE2: React.CSSProperties = {
   ...STYLE1,
-  backgroundColor: "#fff4ff",
+  backgroundColor: "var(--md-surface-container)",
 };
 
 export const Launch: React.FC<Props> = (props) => {

@@ -1,7 +1,7 @@
 {
   "name": "mouse-dictionary",
-  "version": "1.7.2",
-  "repository": "https://github.com/wtetsu/mouse-dictionary.git",
+  "version": "1.8.0",
+  "repository": "https://github.com/0-0mfuji/mouse-dictionary-for-karakeep-and-Anki.git",
   "author": "wtetsu",
   "license": "MIT",
   "scripts": {
@@ -35,6 +35,7 @@
     "package-safari": "npm run release-safari && node tools/archive.js safari"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "deinja": "0.0.3",
     "immer": "^11.1.4",
     "jszip": "^3.10.1",
@@ -44,6 +45,7 @@
     "react-dom": "^19.2.4",
     "sql.js": "^1.14.1",
     "sweetalert": "^2.1.2",
+    "udpipe-node": "^0.3.0",
     "uniqlist": "^1.0.4"
   },
   "devDependencies": {

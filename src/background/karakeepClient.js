@@ -4,6 +4,8 @@
  * Licensed under MIT
  */
 
+import { buildKarakeepApiUrl } from "../main/lib/karakeepApi";
+
 export class KarakeepApiError extends Error {
   constructor(status, message) {
     super(message);
@@ -12,12 +14,10 @@ export class KarakeepApiError extends Error {
   }
 }
 
-const buildUrl = (baseUrl, path) => `${baseUrl.replace(/\/+$/, "")}/api/v1${path}`;
-
 const request = async (baseUrl, apiKey, path, options = {}) => {
   let response;
   try {
-    response = await fetch(buildUrl(baseUrl, path), {
+    response = await fetch(buildKarakeepApiUrl(baseUrl, path), {
       ...options,
       headers: {
         "Content-Type": "application/json",

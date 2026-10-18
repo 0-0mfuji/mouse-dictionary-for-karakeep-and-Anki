@@ -13,10 +13,16 @@ type PreviewWindow = { dialog: HTMLElement; content: HTMLElement };
 
 export const usePreview = () => {
   const refPreview = useRef<Preview>(null);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const previewHost = useCallback((host: HTMLDivElement | null) => {
+    hostRef.current = host;
+    if (host && refPreview.current) host.appendChild(refPreview.current.element);
+  }, []);
 
   const updatePreview = useCallback((settings: MouseDictionarySettings, previewText: string, refresh: boolean) => {
     if (!refPreview.current) {
       refPreview.current = new Preview(settings);
+      hostRef.current?.appendChild(refPreview.current.element);
     }
     refPreview.current?.update(settings, previewText, refresh);
   }, []);
@@ -32,7 +38,7 @@ export const usePreview = () => {
     };
   }, []);
 
-  return { updatePreview, setPreviewVisible };
+  return { updatePreview, setPreviewVisible, previewHost };
 };
 
 class Preview {
@@ -48,9 +54,8 @@ class Preview {
 
   constructor(settings: MouseDictionarySettings) {
     this.update = debounce(this.updateBody.bind(this), 64);
-    this.element = dom.create('<div style="position:absolute;top:10;left:0;z-index:-1;"></div>') as HTMLElement;
+    this.element = document.createElement("div");
     this.element.hidden = true;
-    document.body.appendChild(this.element);
     this.refreshGenerator(settings);
     this.refreshElement(settings);
     this.buildEntries = entryDefault();
@@ -91,7 +96,17 @@ class Preview {
       d.hiddenDialogStyles = undefined;
       d.movingDialogStyles = undefined;
     });
-    return view.create(tmpSettings) as PreviewWindow;
+    const preview = view.create(tmpSettings) as PreviewWindow;
+    // Preview in normal flow, while retaining the configured dimensions and appearance.
+    for (const [property, value] of Object.entries({
+      position: "relative",
+      inset: "auto",
+      margin: "0",
+      "z-index": "auto",
+    })) {
+      preview.dialog.style.setProperty(property, value, "important");
+    }
+    return preview;
   }
 
   refreshGenerator(settings: MouseDictionarySettings): void {

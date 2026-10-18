@@ -38,10 +38,44 @@ const copyStaticFiles = (browser, mode) => {
   // Matches the wasm filename sql.js's bundled *browser* build (dist/sql-wasm-browser.js) actually
   // requests at runtime - see the comment in src/options/logic/anki.ts for why that's the variant
   // esbuild resolves here, as opposed to dist/sql-wasm.wasm.
+  fse.copyFileSync("node_modules/sql.js/dist/sql-wasm-browser.wasm", `dist-${browser}/options/sql-wasm-browser.wasm`);
+  copyReaderParserAssets(browser);
+  copyWhisperRuntime(browser);
+};
+
+const copyWhisperRuntime = (browser) => {
+  const source = "node_modules/onnxruntime-web/dist";
+  const target = `dist-${browser}/reader/whisper`;
+  fse.emptyDirSync(target);
+  for (const file of [
+    "ort-wasm-simd-threaded.mjs",
+    "ort-wasm-simd-threaded.wasm",
+    "ort-wasm-simd-threaded.jsep.mjs",
+    "ort-wasm-simd-threaded.jsep.wasm",
+    "ort-wasm-simd-threaded.asyncify.mjs",
+    "ort-wasm-simd-threaded.asyncify.wasm",
+  ]) {
+    fse.copyFileSync(`${source}/${file}`, `${target}/${file}`);
+  }
+  fse.copyFileSync("node_modules/@huggingface/transformers/LICENSE", `${target}/TRANSFORMERS-LICENSE.txt`);
+};
+
+const copyReaderParserAssets = (browser) => {
+  const target = `dist-${browser}/reader/wasm`;
+  fse.ensureDirSync(target);
+  const runtimePath = "node_modules/udpipe-node/runtime/udpipe-wasm.mjs";
+  const runtime = fse.readFileSync(runtimePath, "utf8");
+  const browserRuntime = runtime.replace("var ENVIRONMENT_IS_NODE=true;", "var ENVIRONMENT_IS_NODE=false;");
+  if (browserRuntime === runtime) {
+    throw new Error("Unable to prepare the UDPipe runtime for browsers.");
+  }
+  fse.writeFileSync(`${target}/udpipe-wasm.mjs`, browserRuntime);
+  fse.copyFileSync("node_modules/udpipe-node/runtime/udpipe-wasm.wasm", `${target}/udpipe-wasm.wasm`);
   fse.copyFileSync(
-    "node_modules/sql.js/dist/sql-wasm-browser.wasm",
-    `dist-${browser}/options/sql-wasm-browser.wasm`,
+    "node_modules/udpipe-node/models/english-gum-ud-2.5-191206.udpipe",
+    `${target}/english-gum-ud-2.5-191206.udpipe`,
   );
+  fse.copyFileSync("static/base/reader/wasm/LICENSES.txt", `${target}/LICENSES.txt`);
 };
 
 const build = (browser, mode) => {

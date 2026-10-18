@@ -1,0 +1,8 @@
+UDPipe source code and WebAssembly runtime
+Copyright (c) 2017-2025 Institute of Formal and Applied Linguistics, Faculty of Mathematics and Physics, Charles University, Czech Republic.
+Licensed under the Mozilla Public License 2.0. Source: https://github.com/ufal/udpipe
+
+English GUM Universal Dependencies model
+Based on Universal Dependencies 2.5 resources. Licensed under CC BY-NC-SA 4.0. Source and terms: https://github.com/ufal/udpipe
+
+The English GUM model is non-commercial. Do not include it in a commercial distribution without replacing it with a model licensed for that use.

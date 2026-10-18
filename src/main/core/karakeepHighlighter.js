@@ -1,8 +1,11 @@
+import { t } from "../../i18n";
 /**
  * Mouse Dictionary (https://github.com/wtetsu/mouse-dictionary/)
  * Copyright 2018-present wtetsu
  * Licensed under MIT
  */
+
+import { captureProgressMap } from "../../reader/readingProgress";
 
 const READER_PATH_SEGMENT = "/dashboard/preview/";
 
@@ -28,6 +31,104 @@ const isOnKarakeepReader = (karakeepUrl) => {
 const extractBookmarkId = () => {
   const match = location.pathname.match(/\/dashboard\/preview\/([^/]+)/);
   return match ? match[1] : null;
+};
+
+const getReaderContainer = () => {
+  // Search results can contain their own `.prose` nodes behind the preview.
+  // Restrict extraction to the open Radix dialog when a modal preview exists.
+  const root =
+    document.querySelector('[role="dialog"][data-state="open"]') ||
+    document.querySelector('[role="dialog"]') ||
+    document;
+  const proseCandidates = Array.from(root.querySelectorAll(".prose"));
+  const candidates = proseCandidates.length
+    ? proseCandidates
+    : Array.from(root.querySelectorAll("div[role='presentation']"));
+  return candidates
+    .filter((candidate) => candidate instanceof HTMLElement && candidate.innerText?.trim().length > 120)
+    .sort((a, b) => b.innerText.length - a.innerText.length)[0];
+};
+
+const getReaderArticle = (karakeepUrl) => {
+  if (!isOnKarakeepReader(karakeepUrl)) return null;
+  const container = getReaderContainer();
+  const text = container?.innerText?.trim();
+  const bookmarkId = extractBookmarkId();
+  if (!text || !bookmarkId) return null;
+  const title = container?.querySelector("h1, h2")?.textContent?.trim() || document.title;
+  return { bookmarkId, title, sourceUrl: location.href, text, progressMap: captureProgressMap(container, text) };
+};
+
+const addRsvpButton = (karakeepUrl) => {
+  const existing = document.getElementById("md-rsvp-launch");
+  if (!isOnKarakeepReader(karakeepUrl)) {
+    existing?.remove();
+    return;
+  }
+  const container = getReaderContainer();
+  if (!container) {
+    existing?.remove();
+    return;
+  }
+  // Radix modal previews block interaction with body siblings. Keep the action inside the preview.
+  const host = container.closest('[role="dialog"]') || container.parentElement || document.body;
+  if (existing?.parentElement === host) {
+    if (!existing.disabled && existing.textContent !== t("dictionary.readRsvp")) {
+      existing.textContent = t("dictionary.readRsvp");
+    }
+    existing.title = t("dictionary.readingTab");
+    existing.setAttribute("aria-label", t("dictionary.readRsvp"));
+    return;
+  }
+  existing?.remove();
+  const button = document.createElement("button");
+  button.id = "md-rsvp-launch";
+  button.type = "button";
+  button.textContent = t("dictionary.readRsvp");
+  button.title = t("dictionary.readingTab");
+  button.setAttribute("aria-label", t("dictionary.readRsvp"));
+  button.style.cssText = [
+    "position:fixed",
+    "right:24px",
+    "bottom:24px",
+    "z-index:2147483646",
+    "padding:12px 18px",
+    "border:1px solid #111",
+    "border-radius:20px",
+    "background:#fff",
+    "color:#111",
+    "font:500 14px system-ui",
+    "box-shadow:0 2px 8px #0003",
+    "cursor:pointer",
+    "pointer-events:auto",
+  ].join(";");
+  button.addEventListener("click", async () => {
+    const article = getReaderArticle(karakeepUrl);
+    if (!article) {
+      button.textContent = t("dictionary.waitArticle");
+      return;
+    }
+    button.disabled = true;
+    button.textContent = t("dictionary.preparing");
+    try {
+      const response = await chrome.runtime.sendMessage({ type: "open_rsvp_reader", article });
+      if (response?.ok) {
+        button.textContent = t("dictionary.opened");
+        setTimeout(() => {
+          button.textContent = t("dictionary.readRsvp");
+          button.disabled = false;
+        }, 1800);
+        return;
+      }
+      button.title = response?.message || t("dictionary.readingFailed");
+      console.error("[rsvp] failed to open reader", response?.message);
+    } catch (error) {
+      console.error("[rsvp] failed to open reader", error);
+    }
+    button.disabled = false;
+    button.textContent = t("dictionary.readRsvp");
+  });
+  host.appendChild(button);
 };
 
 // Karakeep's ReaderView renders the bookmark's htmlContent into a `<div role="presentation">`
@@ -164,4 +265,4 @@ const applyVisualHighlight = (container, startOffset, endOffset, color) => {
   }
 };
 
-export default { getHighlightTarget, applyVisualHighlight };
+export default { getHighlightTarget, applyVisualHighlight, addRsvpButton };

@@ -4,6 +4,8 @@
  * Licensed under MIT
  */
 
+import { buildKarakeepApiUrl } from "../../main/lib/karakeepApi";
+
 export type AnkiEntry = {
   front: string;
   back: string;
@@ -21,7 +23,7 @@ export class KarakeepExportError extends Error {}
 const PAGE_LIMIT = 50;
 
 const request = async (baseUrl: string, apiKey: string, path: string): Promise<any> => {
-  const url = `${baseUrl.replace(/\/+$/, "")}/api/v1${path}`;
+  const url = buildKarakeepApiUrl(baseUrl, path);
   let response: Response;
   try {
     response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });

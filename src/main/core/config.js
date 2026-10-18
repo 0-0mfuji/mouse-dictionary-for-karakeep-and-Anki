@@ -14,12 +14,14 @@ const KEY_LOADED = "**** loaded ****";
 
 const JSON_FIELDS = new Set(["normalDialogStyles", "movingDialogStyles", "hiddenDialogStyles"]);
 
+const mergeStoredSettings = (storedSettings = {}) => withFallbacks({ ...defaultSettings, ...storedSettings });
+
 const loadAll = async () => {
   if (!env.enableUserSettings) {
     return { settings: parseSettings(defaultSettings), position: {} };
   }
   const data = await getStoredData([KEY_USER_CONFIG, KEY_LAST_POSITION]);
-  const mergedSettings = withFallbacks({ ...defaultSettings, ...data[KEY_USER_CONFIG] });
+  const mergedSettings = mergeStoredSettings(data[KEY_USER_CONFIG]);
   const settings = parseSettings(mergedSettings);
 
   const position = data[KEY_LAST_POSITION];
@@ -38,7 +40,7 @@ const loadRawSettings = async () => {
 
   const data = await getStoredData([KEY_USER_CONFIG]);
   const userSettings = data[KEY_USER_CONFIG];
-  return withFallbacks({ ...defaultSettings, ...userSettings });
+  return mergeStoredSettings(userSettings);
 };
 
 // A blank string for these fields would otherwise be sent to the Karakeep API as-is
@@ -46,6 +48,9 @@ const loadRawSettings = async () => {
 const withFallbacks = (settings) => {
   if (!settings.karakeepTag) {
     settings.karakeepTag = defaultSettings.karakeepTag;
+  }
+  if (!settings.openaiModel) {
+    settings.openaiModel = defaultSettings.openaiModel;
   }
   return settings;
 };
@@ -111,6 +116,7 @@ export default {
   loadSettings,
   loadRawSettings,
   parseSettings,
+  mergeStoredSettings,
   savePosition,
   isDataReady,
 };

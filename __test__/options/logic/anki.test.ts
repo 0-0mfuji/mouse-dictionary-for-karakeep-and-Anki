@@ -60,3 +60,23 @@ test("buildApkg should produce an empty but valid collection when there are no n
   expect(noteCount).toEqual(0);
   db.close();
 });
+
+test("buildApkg should create Anki Cloze notes for RSVP sentences", async () => {
+  const blob = await buildApkg(
+    [{ front: "Treatment {{c1::reduced}} mortality.", back: "", type: "cloze", extra: "reduce — 減らす" }],
+    "Medical English RSVP",
+    locateFile,
+  );
+  const zip = await JSZip.loadAsync(await new Response(blob).arrayBuffer());
+  const collectionBytes = await zip.file("collection.anki2")?.async("uint8array");
+  const SQL = await initSqlJs({ locateFile });
+  const db = new SQL.Database(collectionBytes);
+  const row = db.exec("SELECT n.mid, n.flds, m.models FROM notes n JOIN col m ON m.id = 1")[0].values[0];
+  const models = JSON.parse(String(row[2]));
+  const clozeModel = models[String(row[0])];
+  expect(String(row[1])).toBe("Treatment {{c1::reduced}} mortality.\u001freduce — 減らす");
+  expect(clozeModel.type).toBe(1);
+  expect(clozeModel.tmpls[0].qfmt).toBe("{{cloze:Text}}");
+  expect(db.exec("SELECT COUNT(*) FROM cards")[0].values[0][0]).toBe(1);
+  db.close();
+});

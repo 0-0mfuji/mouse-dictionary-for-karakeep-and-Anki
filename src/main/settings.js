@@ -5,6 +5,7 @@
  */
 
 export default {
+  language: "ja",
   shortWordLength: 2,
   cutShortWordDescription: 30,
   parseWordsLimit: 8,
@@ -16,6 +17,8 @@ export default {
   karakeepApiKey: "",
   karakeepTag: "vocab",
   karakeepHighlightColor: "yellow",
+  openaiApiKey: "",
+  openaiModel: "gpt-6-luna",
   backgroundColor: "#ffffff",
   headFontColor: "#000088",
   descFontColor: "#101010",

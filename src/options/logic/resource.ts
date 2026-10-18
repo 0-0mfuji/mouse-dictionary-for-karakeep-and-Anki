@@ -4,48 +4,16 @@
  * Licensed under MIT
  */
 
-import { template } from "../extern";
+import { getLocale, setLocale, t } from "../../i18n";
 import type { TextResourceKeys } from "../resource";
-import { EnglishTextResource, JapaneseTextResource } from "../resource";
 
-let _lang = "";
-
-const resources = {
-  ja: JapaneseTextResource,
-  en: EnglishTextResource,
-};
-
-export const setLang = (newLang: string): void => {
-  _lang = newLang;
-};
-
-export const getLang = (): string => {
-  if (_lang === "") {
-    throw new Error("Language is not set");
-  }
-  return _lang;
-};
-
+export const setLang = setLocale;
+export const getLang = getLocale;
 export const get = (key: TextResourceKeys, params?: Record<string, any>): string => {
-  const resourceText = resources[getLang()]?.[key];
-  if (!resourceText) {
-    return key;
-  }
-  return template.render(resourceText, params);
+  const value = t(`legacy.${key}`, params);
+  return value === `legacy.${key}` ? key : value;
 };
-
-export const decideInitialLanguage = (languages: string[]): string => {
-  if (!languages) {
-    return "en";
-  }
-  const validLanguages = ["en", "ja"];
-  let result = "en";
-  for (let i = 0; i < languages.length; i++) {
-    const lang = languages[i].toLowerCase().split("-")[0];
-    if (validLanguages.includes(lang)) {
-      result = lang;
-      break;
-    }
-  }
-  return result;
+// Explicit preference takes priority; absence always defaults to Japanese.
+export const decideInitialLanguage = (_languages?: string[], preference?: unknown): string => {
+  return preference === "en" ? "en" : "ja";
 };

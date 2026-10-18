@@ -7,6 +7,7 @@
 export type InitialPosition = "left" | "right" | "keep";
 
 export type MouseDictionaryBasicSettings = {
+  language: "ja" | "en";
   initialPosition: InitialPosition;
   backgroundColor: string;
   headFontColor: string;
@@ -36,6 +37,8 @@ export type MouseDictionaryAdvancedSettings = {
   karakeepApiKey: string;
   karakeepTag: string;
   karakeepHighlightColor: "yellow" | "red" | "green" | "blue";
+  openaiApiKey: string;
+  openaiModel: string;
 };
 
 export type MouseDictionarySettings = MouseDictionaryBasicSettings & MouseDictionaryAdvancedSettings;

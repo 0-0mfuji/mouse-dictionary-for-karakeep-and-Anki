@@ -1,3 +1,4 @@
+import { t } from "../../../i18n";
 /**
  * Mouse Dictionary (https://github.com/wtetsu/mouse-dictionary/)
  * Copyright 2018-present wtetsu
@@ -47,7 +48,7 @@ const COPY_BUTTON_STYLES: React.CSSProperties = {
   position: "absolute",
   top: 0,
   right: 0,
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "var(--md-surface-container-lowest)",
   borderRadius: "0 4px 0 4px",
   cursor: "pointer",
   margin: "-1px -1px 0 0",
@@ -64,12 +65,14 @@ const COPY_BUTTON_STYLES1 = {
 } as React.CSSProperties;
 const COPY_BUTTON_STYLES2 = {
   ...COPY_BUTTON_STYLES,
-  color: "#FF4500",
+  color: "var(--md-on-surface)",
+  fontWeight: 700,
 } as React.CSSProperties;
 
 export const WholeSettings: React.FC<Props> = (props) => {
   const [json, setJson] = useState(() => {
     const initialValue = data.postProcessSettings(props.initialValue);
+    delete (initialValue as Partial<MouseDictionarySettings>).openaiApiKey;
     return JSON.stringify(initialValue, null, 2);
   });
 
@@ -87,6 +90,7 @@ export const WholeSettings: React.FC<Props> = (props) => {
         }
         d[key] = newSettings[key];
       }
+      d.openaiApiKey = props.initialValue.openaiApiKey;
       if (errors.length >= 1) {
         throw new Error(errors.join("\n"));
       }
@@ -113,12 +117,13 @@ export const WholeSettings: React.FC<Props> = (props) => {
   const editor = useRef(null) as RefObject<AceEditor | null>;
 
   useEffect(() => {
-    const copyButton = createProcessButton("COPY", COPY_BUTTON_STYLES1, "COPIED!", COPY_BUTTON_STYLES2, () =>
+    const copyButton = createProcessButton(t("ui.copy"), COPY_BUTTON_STYLES1, t("ui.copied"), COPY_BUTTON_STYLES2, () =>
       navigator.clipboard.writeText(json),
     );
     dom.applyStyles(copyButton, COPY_BUTTON_STYLES);
     editor?.current?.refEditor?.appendChild(copyButton);
-  }, []);
+    return () => copyButton.remove();
+  }, [json, res.getLang()]);
 
   return (
     <div style={WRAPPER_DIV_STYLE}>

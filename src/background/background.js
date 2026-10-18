@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 /**
  * Mouse Dictionary (https://github.com/wtetsu/mouse-dictionary/)
  * Copyright 2018-present wtetsu
@@ -7,13 +8,17 @@
 import config from "../main/core/config";
 import karakeepClient from "./karakeepClient";
 import ExpiringQueue from "./queue";
+import { registerReaderLauncher } from "./readerLauncher";
+import { handleReadingProgress, progressScope } from "./readingProgress";
 import generateUniqueId from "./unique";
+
+const RSVP_SESSION_PREFIX = "rsvp_session_";
 
 if (BROWSER === "chrome") {
   chrome.action.onClicked.addListener((tab) => {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: ["main.js"],
+      files: ["karakeep-reader.js", "main.js"],
     });
   });
 } else {
@@ -34,6 +39,9 @@ chrome.runtime.onMessageExternal.addListener((message) => {
 // Shortcut key handling
 chrome.commands.onCommand.addListener((command) => {
   switch (command) {
+    case "open_writer":
+      chrome.tabs.create({ url: chrome.runtime.getURL("writer/index.html") });
+      break;
     case "scroll_up":
       sendToActiveTab((tabId) => chrome.tabs.sendMessage(tabId, { message: { type: "scroll_up" } }));
       break;
@@ -45,7 +53,7 @@ chrome.commands.onCommand.addListener((command) => {
       sendToActiveTab((tabId) =>
         chrome.scripting.executeScript({
           target: { tabId },
-          files: ["main.js"],
+          files: ["karakeep-reader.js", "main.js"],
         }),
       );
       break;
@@ -56,6 +64,15 @@ chrome.commands.onCommand.addListener((command) => {
 const queue = new ExpiringQueue(1000 * 30);
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   switch (request?.type) {
+    case "rsvp_progress_load":
+    case "rsvp_progress_save": {
+      if (!_sender.url?.startsWith(chrome.runtime.getURL("reader/index.html"))) {
+        sendResponse({ ok: false, message: t("dictionary.progressReaderOnly") });
+        return;
+      }
+      handleReadingProgress(request, request.type === "rsvp_progress_save").then(sendResponse);
+      return true;
+    }
     case "open_pdf": {
       const id = generateUniqueId();
       queue.push(id, request.payload);
@@ -83,8 +100,44 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       createKarakeepHighlight(request).then(sendResponse);
       return true;
     }
+    case "open_rsvp_reader": {
+      openRsvpReader(request.article).then(sendResponse);
+      return true;
+    }
   }
 });
+
+const openRsvpReader = async (article) => {
+  if (!article || typeof article.text !== "string" || !article.text.trim()) {
+    return { ok: false, message: "No article text was found." };
+  }
+  const sessionId = generateUniqueId();
+  const key = `${RSVP_SESSION_PREFIX}${sessionId}`;
+  try {
+    const settings = await config.loadSettings();
+    const scope = await progressScope(settings.karakeepUrl || "", settings.karakeepApiKey || "");
+    await chrome.storage.local.set({
+      [key]: {
+        article: {
+          title: String(article.title ?? ""),
+          sourceUrl: String(article.sourceUrl ?? ""),
+          bookmarkId: String(article.bookmarkId ?? ""),
+          text: article.text,
+          progressMap: article.progressMap,
+          progressScope: scope,
+        },
+        createdAt: Date.now(),
+      },
+    });
+    await chrome.tabs.create({
+      url: chrome.runtime.getURL(`reader/index.html?session=${encodeURIComponent(sessionId)}`),
+    });
+    return { ok: true };
+  } catch (error) {
+    await chrome.storage.local.remove(key);
+    return { ok: false, message: error instanceof Error ? error.message : String(error) };
+  }
+};
 
 const saveWordToKarakeep = async ({ word, meaning, pageUrl }) => {
   const settings = await config.loadSettings();
@@ -137,3 +190,19 @@ const sendToActiveTab = (callback) => {
     }
   });
 };
+
+// Register only for the configured Karakeep instance with an existing site grant.
+let launcherRegistration = Promise.resolve();
+const refreshReaderLauncher = () => {
+  launcherRegistration = launcherRegistration
+    .catch(() => undefined)
+    .then(registerReaderLauncher)
+    .catch((error) => console.warn("[rsvp] launcher registration failed", error));
+};
+chrome.runtime.onInstalled.addListener(refreshReaderLauncher);
+chrome.permissions.onAdded.addListener(refreshReaderLauncher);
+chrome.permissions.onRemoved.addListener(refreshReaderLauncher);
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes["**** config ****"]) refreshReaderLauncher();
+});
+refreshReaderLauncher();

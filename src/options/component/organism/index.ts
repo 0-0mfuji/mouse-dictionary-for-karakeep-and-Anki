@@ -8,6 +8,7 @@ export * from "./AdvancedSettings";
 export * from "./BasicSettings";
 export * from "./KarakeepSettings";
 export * from "./LoadDictionary";
+export * from "./OpenAISettings";
 export * from "./OperationPanel";
 export * from "./ReplaceRuleEditor";
 export * from "./Tips";

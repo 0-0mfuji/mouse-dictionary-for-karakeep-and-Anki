@@ -1,3 +1,5 @@
+import { initializeLocale } from "../i18n";
+import { useLocale } from "../i18n/react";
 /**
  * Mouse Dictionary (https://github.com/wtetsu/mouse-dictionary/)
  * Copyright 2018-present wtetsu
@@ -9,7 +11,6 @@ import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import swal from "sweetalert";
 import rule from "../main/core/rule";
-import { res } from "./logic";
 import { Main } from "./page/Main";
 import "ace-builds/src-noconflict/mode-html";
 import "ace-builds/src-noconflict/mode-json";
@@ -17,8 +18,6 @@ import "ace-builds/src-noconflict/theme-xcode";
 import "ace-builds/src-noconflict/theme-tomorrow";
 import "ace-builds/src-noconflict/theme-solarized_light";
 ace.config.set("basePath", "/options");
-
-res.setLang(res.decideInitialLanguage([...navigator.languages]));
 
 window.onerror = (msg) => {
   swal({
@@ -36,6 +35,7 @@ const sendMessage = async (message: any) => {
 };
 
 const App = () => {
+  useLocale();
   const [mode, setMode] = useState<"loading" | "options" | "pdf">("loading");
 
   const showPdfViewer = (id: string) => {
@@ -79,7 +79,7 @@ const App = () => {
 
 const root = createRoot(document.getElementById("app") as HTMLElement);
 
-root.render(<App />);
+void initializeLocale().then(() => root.render(<App />));
 
 // Lazy load
 rule.load();

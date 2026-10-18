@@ -1,3 +1,4 @@
+import { t } from "../../i18n";
 /**
  * Mouse Dictionary (https://github.com/wtetsu/mouse-dictionary/)
  * Copyright 2018-present wtetsu
@@ -186,6 +187,7 @@ const setDialogEvents = (dialog, getHighlightTarget) => {
       if (elem.dataset.mdSaveSet) {
         continue;
       }
+      elem.title = t("dictionary.save");
       elem.dataset.mdSaveSet = "true";
       elem.addEventListener("click", () => saveToKarakeep(elem));
     }
@@ -193,6 +195,7 @@ const setDialogEvents = (dialog, getHighlightTarget) => {
       if (elem.dataset.mdHighlightSet) {
         continue;
       }
+      elem.title = t("dictionary.mark");
       elem.dataset.mdHighlightSet = "true";
       elem.addEventListener("click", () => markInKarakeep(elem, getHighlightTarget()));
     }
@@ -225,10 +228,10 @@ const saveToKarakeep = async (elem) => {
 
   if (response?.ok) {
     elem.textContent = "✅";
-    elem.title = "Saved to Karakeep";
+    elem.title = t("dictionary.saved");
   } else {
     elem.textContent = "❌";
-    elem.title = response?.message ? `Failed to save: ${response.message}` : "Failed to save to Karakeep";
+    elem.title = response?.message ? `${t("dictionary.saveFailed")}: ${response.message}` : t("dictionary.saveFailed");
     DEBUG && console.info("[karakeep] save failed", response);
   }
 };
@@ -259,7 +262,7 @@ const markInKarakeep = async (elem, highlightTarget) => {
 
   if (response?.ok) {
     elem.textContent = "✅";
-    elem.title = "Marked in Karakeep";
+    elem.title = t("dictionary.marked");
     // karakeep's own page has no way to know we created this highlight via its API directly, so
     // its highlight list won't include it until the page is reloaded. Draw it in immediately so
     // the user doesn't have to reload to see the result of what they just did.
@@ -271,13 +274,13 @@ const markInKarakeep = async (elem, highlightTarget) => {
     );
   } else {
     elem.textContent = "❌";
-    elem.title = response?.message ? `Failed to mark: ${response.message}` : "Failed to mark in Karakeep";
+    elem.title = response?.message ? `${t("dictionary.markFailed")}: ${response.message}` : t("dictionary.markFailed");
     DEBUG && console.info("[karakeep] mark-in-article failed", response);
   }
 };
 
 const createSnapGuideElement = () => {
-  const guideElement = dom.create("<div>Shift+Move: Smart-snap</div");
+  const guideElement = dom.create(`<div>${t("dictionary.snap")}</div>`);
   dom.applyStyles(guideElement, {
     right: "0px",
     top: "0px",

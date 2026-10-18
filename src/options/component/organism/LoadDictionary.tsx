@@ -62,7 +62,7 @@ export const LoadDictionary: React.FC<Props> = (props) => {
 
       if (selectRef.current) {
         selectRef.current.style.transition = "background-color 0.5s ease";
-        selectRef.current.style.backgroundColor = "lightyellow";
+        selectRef.current.style.backgroundColor = "var(--md-surface-container-high)";
         setTimeout(() => {
           if (selectRef.current) {
             selectRef.current.style.backgroundColor = "";

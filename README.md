@@ -149,6 +149,49 @@ Parameters:
 | type | string | must be "text"           |
 | text | string | text you want to look up |
 
+## Settings and languages
+
+The settings screen uses a neutral Material 3 theme and the Mouse Dictionary for Karakeep and Anki brand mark. Choose **日本語** or **English** at the top of settings; Japanese is the default. Changes save automatically and the selected language also applies to new AI feedback and voice transcription. Existing dictionary definitions and saved content retain their original language.
+
+UI text and AI instructions are maintained in `src/i18n/locales/<language>/translation.json`. See [the translation guide](src/i18n/README.md) to add another language. The display preview stays inside its own scrollable settings card, so large dictionary windows do not overlap navigation. The version number links to this repository.
+
+## Writing mode
+
+Open writing mode from settings to create documents or import Markdown/text files. AI identifies passages to reconsider and asks questions without writing replacements. Local checks flag filler words, repeated phrases, passive voice, and nominalizations. Documents, revision history, and review-method comparisons are saved locally. You can compare revisions, view differences, export Markdown, and configure the OpenAI model in settings. OpenAI requests require your API key and may incur API charges.
+
+## Karakeep RSVP Reader
+
+On a Karakeep Reader page, use **RSVPで読む** to open the saved article in a separate extension tab. The reader captures the article text from the page and analyzes it locally in a Web Worker with the bundled UDPipe WebAssembly parser.
+
+Video transcripts with leading timestamps (for example, `00:08` or `02:25`) are detected automatically. The reader removes the timestamps and transcript heading, then joins caption lines split in the middle of a sentence. It keeps an offset mapping back to the original Karakeep text for reading progress and highlights. Ordinary article text is left as-is.
+
+The first sentences become readable after their dictionary entries load; the rest load in the background. Reading position uses offsets in the original article, so later phrase grouping does not move it. Text that cannot be aligned to the parser output stays in the reader with an **解析なし** label instead of disappearing. If the parser itself is unavailable, the article remains readable in source order without syntax labels.
+
+Reading positions sync with Karakeep **0.33.2** using the configured instance URL and API key (bookmark read/write access). The extension keeps an exact word position locally, while Karakeep receives the corresponding paragraph and reading percentage. Progress is saved every three seconds while reading and on pause, page hide, and the reader's Close button. Browsing the sentence picker without confirming does not change the position.
+
+On reopening, a changed Karakeep position takes precedence; otherwise the local word position is restored. Local positions are scoped to the instance and API key and checked against the article text. Failed syncs keep the local position and retry while the reader is open or when it is reopened. The status above the reader reports sync failures. Reload an already-open Karakeep reader to fetch the updated position; its existing Continue Reading banner is not updated live. The localhost design preview uses sample text and does not connect to Karakeep.
+
+The progress adapter uses the `bookmarks.getReadingProgress` and `bookmarks.updateReadingProgress` tRPC procedures from Karakeep 0.33.2. These are version-specific internal endpoints; the REST bookmark update API does not expose reading progress. Paragraph anchors and per-text-node normalized offsets follow that version's `reading-progress-dom.ts`. When a paragraph cannot be mapped, the extension keeps the position locally instead of sending a guessed offset.
+
+
+- Space toggles playback, W/S changes speed, A/D moves one reading unit, and Q/E moves one sentence. The speed slider is also available. Longer phrases remain on screen longer.
+- Use the **訳 表示中 / 非表示** toggle to choose whether glosses remain visible, then select **この文に答える** to explain the sentence briefly in Japanese. Glosses can also be shown or hidden while answering. Type the answer or record it with the microphone; a multilingual Whisper Tiny model transcribes Japanese locally in a worker, using WebGPU when available and WASM otherwise. The first use downloads model weights from Hugging Face and caches them in the browser. Check or edit the transcript before submitting. The original sentence, parser hints, and glosses remain available after submission. Reviews of answers that used glosses are labeled accordingly; their scores do not represent unaided recall.
+- In Mouse Dictionary settings, enter an OpenAI API key and select a review model (default: `gpt-6-luna`). The key is stored in extension local storage; the model selection syncs with other settings. Grant OpenAI and Hugging Face host access using the adjacent buttons. Submitting a response sends the English sentence and Japanese answer to the OpenAI Responses API. The review shows a natural Japanese model answer, weighted comprehension points with English evidence, specific corrections, and explained nuances. The displayed score is calculated from the point judgments (understood: full, partial: half, missing/misunderstood: zero; uncertain speech recognition is excluded). Click an underlined part of the Japanese answer to open its English correspondence and correction in a popover. Scores remain study guidance, not a validated exam grade. API use is billed to the configured OpenAI account.
+- **履歴** beside **閉じる** opens a separate extension tab with recent answers. The English sentence, parser hints, submitted Japanese answer, and any returned AI review are saved locally when the answer is submitted; the most recent 100 entries are kept. History does not store the API key or audio recording.
+- Reviews include up to one preceding and one following English sentence as context for pronouns and ellipsis; only the selected sentence is graded. The context sent for a review can be expanded in its history entry. The history page shows per-answer and retained-history token usage reported by the Responses API: input, cache reads and writes, output, and reasoning tokens. Older calls and requests without a returned usage record cannot be reconstructed from the extension.
+- If the same sentence, answer, input method, gloss condition, surrounding context, model, and review prompt version have already produced a review, the reader reuses that saved result without another API request. Repeated submission while a review is in progress is ignored. The reader and history label reused reviews so a zero-call entry is distinguishable from an unreviewed answer.
+- The **再生方法** selector offers normal playback or sentence-by-sentence answer mode with text or voice. Voice mode opens the microphone only when recording starts after each sentence and releases it as soon as recording ends; transcription runs after release. Cancelling, changing modes, navigating, or hiding the reader also releases the microphone. Text mode focuses the answer field. Review the answer before continuing to the next sentence. The active English word can be spoken using the browser's English speech voice. The **その他** menu contains pronunciation voice selection and review marks; **次の再読文へ** jumps among marks, and the sentence picker labels them. The **語句・保存** menu contains phrase splitting, Karakeep marking, and Anki card creation.
+- Dictionary phrases that cross clear clause boundaries are ignored. While paused, **語句を分ける** splits an incorrectly joined phrase into reading units; **語句をまとめる** restores it. The choice is saved locally for the article.
+- Inline EIJIRO meanings are labeled by grammatical evidence. **品詞一致** means the parser matched the dictionary part of speech, not that the meaning was verified in context; **複数候補** means several meanings remain. Anki cards include this caveat.
+- While paused, the reader shows the full sentence, dependency arcs and labels, approximate S/V/O/C roles, the current EIJIRO entry when present in the existing local dictionary, and the sentence as an example.
+- **この語を穴抜きカードにする** downloads an Anki `.apkg` with a cloze deletion, dictionary text, dependency label, and source link when available. Import the file into Anki.
+- Karakeep’s configured URL and API key stay in the existing extension settings. The reader uses those saved settings and does not create a second set of credentials.
+
+The bundled English GUM model is licensed under **CC BY-NC-SA 4.0**; it may not be included in commercial distributions. See `reader/wasm/LICENSES.txt` in the built extension before redistributing it. The UDPipe runtime is MPL-2.0.
+The local speech runtime uses [Transformers.js](https://github.com/huggingface/transformers.js) (Apache-2.0) and [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (MIT). The multilingual Whisper Tiny model is downloaded from [Hugging Face](https://huggingface.co/onnx-community/whisper-tiny) on first use.
+
+The review prompt assesses meaning units and distinguishes likely speech recognition errors from comprehension errors. It avoids deductions for valid paraphrases. Its structured output lets the UI pair a specific Japanese phrase with the corresponding English evidence. This follows the [OpenAI structured output guidance](https://developers.openai.com/api/docs/guides/structured-outputs), the [OpenAI Cookbook's meaning-based speech translation evaluation](https://github.com/openai/openai-cookbook/blob/main/examples/voice_solutions/realtime_translation_guide.mdx), and [Hacker News discussion of criterion-based grading](https://news.ycombinator.com/item?id=46697826). Browser-side Whisper with GPU and CPU fallback was also [discussed on Hacker News](https://news.ycombinator.com/item?id=47056363). The prompt needs calibration against human-rated examples before the score should be treated as a formal assessment.
+
 ## License
 
 Mouse Dictionary is published under the MIT license.
@@ -169,6 +212,10 @@ This project includes some third-party data:
 ### Built-in PDF viewer
 
 - [Mouse Dictionary's built-in PDF viewer](https://github.com/wtetsu/pdf.js) is based on [PDF.js](https://github.com/mozilla/pdf.js) ([Apache-2.0](https://github.com/mozilla/pdf.js/blob/master/LICENSE))
+
+### RSVP grammar parser
+
+- [UDPipe](https://github.com/ufal/udpipe) (MPL-2.0) and its English GUM model (CC BY-NC-SA 4.0; non-commercial use only; see `static/base/reader/wasm/LICENSES.txt`)
 
 ### Great JavaScript libraries
 

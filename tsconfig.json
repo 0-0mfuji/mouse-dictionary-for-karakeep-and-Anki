@@ -6,7 +6,13 @@
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "types": ["chrome"]
+    "types": [
+      "chrome"
+    ],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": ["__test__"]
+  "exclude": [
+    "__test__"
+  ]
 }

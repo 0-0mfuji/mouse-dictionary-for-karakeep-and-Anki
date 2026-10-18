@@ -15,13 +15,14 @@ export const Overlay: React.FC<Props> = (props) => {
   }
   return (
     <div
+      className="settings-overlay"
       style={{
         top: 0,
         left: 0,
         width: "100%",
         height: "100%",
         zIndex: 10000,
-        backgroundColor: "#ffffff",
+        backgroundColor: "var(--md-surface-container-lowest)",
         position: "fixed",
         opacity: 0.99,
       }}

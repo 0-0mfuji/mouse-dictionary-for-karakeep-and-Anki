@@ -8,6 +8,7 @@ import dom from "../lib/dom";
 import utils from "../lib/utils";
 import config from "./config";
 import events from "./events";
+import karakeepHighlighter from "./karakeepHighlighter";
 import pdf from "./pdf";
 import res from "./resource";
 import rule from "./rule";
@@ -124,6 +125,7 @@ const toggleDialog = (area, userSettings) => {
 };
 
 const initialize = (userSettings, storedPosition) => {
+  karakeepHighlighter.addRsvpButton(userSettings.karakeepUrl);
   const area = view.create(userSettings);
   area.dialog.id = DIALOG_ID;
   dom.applyStyles(area.dialog, userSettings.hiddenDialogStyles);

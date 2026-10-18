@@ -1,12 +1,24 @@
 {
   "targets": {
-    "chrome": ["chrome131"],
-    "firefox": ["firefox132"],
-    "safari": ["safari14"]
+    "chrome": [
+      "chrome131"
+    ],
+    "firefox": [
+      "firefox132"
+    ],
+    "safari": [
+      "safari14"
+    ]
   },
   "entries": {
     "src/main/start.js": "main.js",
     "src/options/app.tsx": "options/options.js",
-    "src/background/background.js": "background.js"
+    "src/reader/app.tsx": "reader/app.js",
+    "src/reader/historyApp.tsx": "reader/history.js",
+    "src/writer/app.tsx": "writer/app.js",
+    "src/reader/worker.js": "reader/worker.js",
+    "src/reader/transcriptionWorker.ts": "reader/transcriptionWorker.js",
+    "src/background/background.js": "background.js",
+    "src/main/karakeepReader.js": "karakeep-reader.js"
   }
 }

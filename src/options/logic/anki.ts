@@ -15,6 +15,8 @@ import initSqlJs from "sql.js";
 export type AnkiNote = {
   front: string;
   back: string;
+  type?: "basic" | "cloze";
+  extra?: string;
 };
 
 // Anki's legacy (pre-"anki21b") collection schema version, as written by genanki and widely
@@ -35,6 +37,7 @@ export const buildApkg = async (
   const now = Date.now();
   const nowSec = Math.floor(now / 1000);
   const modelId = now;
+  const clozeModelId = now + 2;
   const deckId = now + 1;
 
   db.run(SCHEMA_SQL);
@@ -46,7 +49,7 @@ export const buildApkg = async (
       now,
       SCHEMA_VERSION,
       JSON.stringify(buildConf(deckId, modelId)),
-      JSON.stringify(buildModels(modelId, deckId, nowSec, deckName)),
+      JSON.stringify(buildModels(modelId, deckId, nowSec, deckName, clozeModelId)),
       JSON.stringify(buildDecks(deckId, nowSec, deckName)),
       JSON.stringify(buildDeckConf(nowSec)),
     ],
@@ -60,13 +63,15 @@ export const buildApkg = async (
     const cardId = idCounter;
 
     const guid = generateGuid();
-    const flds = `${note.front}${note.back}`;
+    const isCloze = note.type === "cloze";
+    const noteModelId = isCloze ? clozeModelId : modelId;
+    const flds = `${note.front}${isCloze ? (note.extra ?? note.back) : note.back}`;
     const sfld = note.front;
     const csum = await checksum(sfld);
 
     db.run(
       "INSERT INTO notes (id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data) VALUES (?, ?, ?, ?, -1, '', ?, ?, ?, 0, '')",
-      [noteId, guid, modelId, nowSec, flds, sfld, csum],
+      [noteId, guid, noteModelId, nowSec, flds, sfld, csum],
     );
 
     db.run(
@@ -95,7 +100,7 @@ const checksum = async (text: string): Promise<number> => {
 
 const generateGuid = (): string => crypto.randomUUID().replace(/-/g, "").slice(0, 10);
 
-const buildModels = (modelId: number, deckId: number, nowSec: number, name: string) => ({
+const buildModels = (modelId: number, deckId: number, nowSec: number, name: string, clozeModelId: number) => ({
   [modelId]: {
     id: modelId,
     name,
@@ -125,6 +130,38 @@ const buildModels = (modelId: number, deckId: number, nowSec: number, name: stri
     latexPost: "\\end{document}",
     latexsvg: false,
     req: [[0, "any", [0]]],
+    tags: [],
+    vers: [],
+  },
+  [clozeModelId]: {
+    id: clozeModelId,
+    name: `${name} Cloze`,
+    type: 1,
+    mod: nowSec,
+    usn: -1,
+    sortf: 0,
+    did: deckId,
+    tmpls: [
+      {
+        name: "Cloze",
+        ord: 0,
+        qfmt: "{{cloze:Text}}",
+        afmt: "{{cloze:Text}}<hr id=answer>{{Extra}}",
+        did: null,
+        bqfmt: "",
+        bafmt: "",
+      },
+    ],
+    flds: [
+      { name: "Text", ord: 0, sticky: false, rtl: false, font: "Arial", size: 20, media: [] },
+      { name: "Extra", ord: 1, sticky: false, rtl: false, font: "Arial", size: 16, media: [] },
+    ],
+    css: ".card { font-family: arial; font-size: 20px; text-align: left; color: black; background-color: white; } .cloze { font-weight: bold; }",
+    latexPre:
+      "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+    latexPost: "\\end{document}",
+    latexsvg: false,
+    req: [[0, "all", [0]]],
     tags: [],
     vers: [],
   },

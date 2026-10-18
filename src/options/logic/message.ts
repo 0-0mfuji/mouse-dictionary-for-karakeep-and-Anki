@@ -5,6 +5,7 @@
  */
 
 import swal from "sweetalert";
+import { t } from "../../i18n";
 
 type Icon = "info" | "success" | "warning" | "error";
 type Buttons = "ok" | "okCancel";
@@ -33,7 +34,7 @@ const show = (text: string, icon: Icon, buttons?: Buttons, extraOptions?: Record
   const options = {
     text,
     icon,
-    buttons: buttons === "okCancel" ? [true, true] : undefined,
+    buttons: buttons === "okCancel" ? [t("legacy.closeJsonEditor"), "OK"] : undefined,
   };
   if (extraOptions) {
     Object.assign(options, extraOptions);

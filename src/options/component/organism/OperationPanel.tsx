@@ -14,8 +14,8 @@ type Props = {
 };
 
 const style = {
-  backgroundColor: "#FFFFFF",
-  color: "#FF4500",
+  backgroundColor: "var(--md-surface-container-lowest)",
+  color: "var(--md-on-surface)",
   transition: "0.5s",
 };
 const style1 = { ...style, opacity: 0.0 };

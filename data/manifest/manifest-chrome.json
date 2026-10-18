@@ -22,6 +22,10 @@
     "default_title": "Mouse Dictionary for Karakeep and Anki"
   },
   "commands": {
+    "open_writer": {
+      "description": "執筆モードを開く",
+      "suggested_key": { "default": "Alt+Shift+W" }
+    },
     "_execute_action": {
       "description": "Activate the extension"
     },
